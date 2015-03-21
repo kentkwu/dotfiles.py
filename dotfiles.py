@@ -60,12 +60,6 @@ def get_all(directory):
     files = os.listdir(directory)
     return files
 
-def importall(dotfiles_dir, home_dir):
-    """Create symlinks for all dotfiles in dotfiles directory in the home directory"""
-    DOTFILES = os.listdir(dotfiles_dir)
-    for file in get_all(dotfiles_dir):
-        symlink(file, home_dir, dotfiles_dir)
-
 def symlinks_to_dotfiles_all(dotfiles_dir, home_dir):
     """Changes all symlinks in the home directory back to dotfiles"""
     for file in get_all(dotfiles_dir):
@@ -123,12 +117,13 @@ def symlinks_to_dotfiles(list_of_files):
 def repo_to_symlinks(list_of_files):
     """Creates a symlink in the home directory for each file in ~/dotfiles specified"""
     for file in list_of_files:
-        importdotfile(file, DOTFILES, HOMEDIR)
+        symlink(file, HOMEDIR, DOTFILES)
 
 def repo_to_symlinks_all():
     """Creates symlinks in home directory for every file in dotfiles"""
     for file in get_all(DOTFILES):
-        symlink(file, DOTFILES, HOMEDIR)
+        if file[0] != '.':
+            symlink(file, HOMEDIR, DOTFILES)
 
 
 def remove_all_hidden_symlinks():
@@ -137,7 +132,7 @@ def remove_all_hidden_symlinks():
     hidden_symlinks = [file for file in files if file[0] == '.' and os.path.islink('{}/{}'.format(HOMEDIR, file))]
     print "REMOVING SYMLINKS"
     for file in hidden_symlinks:
-        os.remove('{}/{}'.format(HOMEDIR, file))
+        os.unlink('{}/{}'.format(HOMEDIR, file))
     print "DONE"
 
 
@@ -175,8 +170,6 @@ if __name__ == "__main__":
     DOTFILES = os.path.expanduser('~/dotfiles')
 
 
-    if args.importall:
-        importall(DOTFILES, HOMEDIR)
     if args.backup:
         add_to_backups(args.backup)
     if args.files:

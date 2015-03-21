@@ -9,10 +9,10 @@ def copy(dotfile, home_dir, backups_dir):
     """Copies the dotfile to the the DOTFILES_backup directory"""
     print 'Copying {} from home directory to {}'.format(dotfile, backups_dir)
     try:
-        shutil.copy2('{}.{}'.format(home_dir, dotfile), '{}.{}'.format(backups_dir, file))
+        shutil.copy2('{}/.{}'.format(home_dir, dotfile), '{}/.{}'.format(backups_dir, dotfile))
     except IOError as e:
         if e.errno == errno.EISDIR:
-            shutil.copytree('{}.{}'.format(home_dir, dotfile), '{}.{}'.format(backups_dir, file))
+            shutil.copytree('{}/.{}'.format(home_dir, dotfile), '{}/.{}'.format(backups_dir, dotfile))
         else:
             raise
     print 'Success'
@@ -34,15 +34,15 @@ def symlink(dotfile, home_dir, dotfiles_dir):
 def symlink_to_dotfile(dotfile, dotfiles_dir, home_dir):
     """Deletes the symlink for a dotfile in the home directory, and move the dotfile from ~/DOTFILES
        to the home directory"""
-    symlinkpath = '{}.{}'.format(home_dir, dotfile)
+    symlinkpath = '{}/.{}'.format(home_dir, dotfile)
     if not os.path.islink(symlinkpath):
         print "{} is not a symlink in {}".format(dotfile, HOMEDIR)
     else:
         print "Removing {} symlink from home directory".format(dotfile)
-        os.remove('{}.{}'.format(home_dir, dotfile))
+        os.remove('{}/.{}'.format(home_dir, dotfile))
         print "Success"
         print "Moving {} from {} to {}".format(dotfile, dotfiles_dir, home_dir)
-        shutil.move('{}/{}'.format(dotfiles_dir, dotfile), '{}.{}'.format(home_dir, dotfile))
+        shutil.move('{}/{}'.format(dotfiles_dir, dotfile), '{}/.{}'.format(home_dir, dotfile))
         print "Success"
 
 def repo_to_symlink(dotfile, dotfiles_dir, home_dir):
@@ -87,7 +87,10 @@ def add_to_backups(list_of_files):
                                   want to proceed? (y/n): ".format(BACKUPS))
         if confirmation == 'y':
             for file in list_of_files:
-                removeitem('{}/{}/.{}'.format(HOMEDIR, BACKUPS, file))
+                print '{} from {} to {}'.format(file, HOMEDIR, BACKUPS)
+                print 'The sourve file path is {}/.{}'.format(BACKUPS, file)
+                if os.path.isdir('{}/.{}'.format(BACKUPS, file)):
+                    removeitem('{}/.{}'.format(BACKUPS, file))
                 copy(file, HOMEDIR, BACKUPS)
         elif confirmation == 'n':
             print 'Exiting script'
@@ -122,7 +125,7 @@ if __name__ == "__main__":
     desc = """This is a script to easily manage your important DOTFILES through version control (such as git). This script will create a ~/DOTFILES folder which will hold all of your selected DOTFILES, and a ~/DOTFILES_BACKUPS which will hold additional BACKUPS or your DOTFILES. A symlink for each dotfile in ~/DOTFILES is created at the top level, which will allow for programs to access them normally."""
 
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument( '-b', '--backup', nargs='*', help='Copies all of your DOTFILES into DOTFILES_BACKUPS',
+    parser.add_argument( '-b', '--backup', nargs='*', help='Copies your selected DOTFILES into DOTFILES_BACKUPS',
                         dest='backup', action='store' )
 
     parser.add_argument( '-a', '--add', nargs='*', help='Copy DOTFILES to ~/DOTFILES_backup, move dotfile from \
@@ -147,7 +150,7 @@ if __name__ == "__main__":
     #                    dest='doforall', action='store_true' )
     args = parser.parse_args()
 
-    HOMEDIR = os.path.expanduser('~/')
+    HOMEDIR = os.path.expanduser('~')
     BACKUPS = os.path.expanduser('~/dotfiles_backups')
     DOTFILES = os.path.expanduser('~/dotfiles')
 

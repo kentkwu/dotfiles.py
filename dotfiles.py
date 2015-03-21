@@ -5,47 +5,14 @@ import shutil
 import errno
 import sys
 
-desc = """This is a script to easily manage your important DOTFILES through version control (such as git). This script will create a ~/DOTFILES folder which will hold all of your selected DOTFILES, and a ~/DOTFILES_BACKUPS which will hold additional BACKUPS or your DOTFILES. A symlink for each dotfile in ~/DOTFILES is created at the top level, which will allow for programs to access them normally."""
-
-parser = argparse.ArgumentParser(description=desc)
-parser.add_argument( '-b', '--backup', nargs='*', help='Copies all of your DOTFILES into DOTFILES_BACKUPS',
-                    dest='backup', action='store' )
-
-parser.add_argument( '-a', '--add', nargs='*', help='Copy DOTFILES to ~/DOTFILES_backup, move dotfile from \
-                                        home directory to ~/DOTFILES, and create symlink from home directory', 
-                    dest='files', action='store' )
-
-parser.add_argument( '-r', '--reverse', nargs='*', help='Reverse -a for dotfile(s) in ~/DOTFILES',
-                    dest='reverse', action='store' )
-
-parser.add_argument( '--reverseall', help='Convert all symlinks to DOTFILES back into DOTFILES',
-                    dest='reverseall', action='store_true' )
-
-parser.add_argument( '-i', '--import', nargs='*', help='Create symlink in home directory for dotfile(s) in ~/DOTFILES',
-                    dest='importfiles', action='store' )
-
-parser.add_argument( '--importall', help='Create symlinks in home directory for all DOTFILES in ~/DOTFILES',
-                    dest='importall', action='store_true' )
-
-###THINGS TO ADD: CLEAR SYMLINKS FROM HOME DIRECTORY, CLEAR ALL SYMLINKS###
-
-#parser.add_argument( '-A', '--all', help='Performs action for all files',
-#                    dest='doforall', action='store_true' )
-args = parser.parse_args()
-
-HOMEDIR = os.path.expanduser('~/')
-BACKUPS = os.path.expanduser('~/DOTFILES_BACKUPS/')
-DOTFILES = os.path.expanduser('~/DOTFILES/')
-dotfile_text = os.path.expanduser('~/DOTFILES/DOTFILES.txt')
-
-def copy(dotfile, home_dir, BACKUPS_dir):
+def copy(dotfile, home_dir, backups_dir):
     """Copies the dotfile to the the DOTFILES_backup directory"""
-    print 'Copying {} from home directory to {}'.format(dotfile, BACKUPS_dir)
+    print 'Copying {} from home directory to {}'.format(dotfile, backups_dir)
     try:
-        shutil.copy2('{}.{}'.format(home_dir, dotfile), '{}.{}'.format(BACKUPS_dir, file))
+        shutil.copy2('{}.{}'.format(home_dir, dotfile), '{}.{}'.format(backups_dir, file))
     except IOError as e:
         if e.errno == errno.EISDIR:
-            shutil.copytree('{}.{}'.format(home_dir, dotfile), '{}.{}'.format(BACKUPS_dir, file))
+            shutil.copytree('{}.{}'.format(home_dir, dotfile), '{}.{}'.format(backups_dir, file))
         else:
             raise
     print 'Success'
@@ -53,7 +20,7 @@ def copy(dotfile, home_dir, BACKUPS_dir):
 def move(dotfile, home_dir, dotfiles_dir):
     """Moves the dotfile from the home directory to the DOTFILES directory"""
     print 'Moving {} from home directory to {}'.format(dotfile, dotfiles_dir)
-    shutil.move('{}.{}'.format(home_dir, dotfile), '{}/{}'.format(dotfiles_dir, file))
+    shutil.move('{}/.{}'.format(home_dir, dotfile), '{}/{}'.format(dotfiles_dir, dotfile))
     print 'Success'
 
 def symlink(dotfile, home_dir, dotfiles_dir):
@@ -181,8 +148,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     HOMEDIR = os.path.expanduser('~/')
-    BACKUPS = os.path.expanduser('~/dotfiles_backups/')
-    DOTFILES = os.path.expanduser('~/dotfiles/')
+    BACKUPS = os.path.expanduser('~/dotfiles_backups')
+    DOTFILES = os.path.expanduser('~/dotfiles')
+
 
     if args.importall:
         importall(DOTFILES, HOMEDIR)
